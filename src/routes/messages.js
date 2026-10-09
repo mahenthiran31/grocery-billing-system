@@ -1,0 +1,1 @@
+import {Router} from "express";import {send} from "../controllers/messagingController.js";import {auth} from "../middleware/auth.js";const r=Router();r.use(auth);r.post("/order/:id",send);export default r;

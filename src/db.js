@@ -1,0 +1,21 @@
+import Database from "better-sqlite3";
+import { env } from "./config/env.js";
+import path from "path";
+import { fileURLToPath } from "url";
+import fs from "fs";
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const dbPath = path.resolve(__dirname, env.dbFile);
+fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+export const db = new Database(dbPath);
+db.pragma("foreign_keys = ON");
+export function initDb(){db.exec(`
+CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL,mobile TEXT UNIQUE NOT NULL,password_hash TEXT NOT NULL,role TEXT NOT NULL DEFAULT 'admin',created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS categories(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT UNIQUE NOT NULL);
+CREATE TABLE IF NOT EXISTS menu_items(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL,category_id INTEGER,price REAL NOT NULL CHECK(price>=0),available INTEGER NOT NULL DEFAULT 1,stock INTEGER NOT NULL DEFAULT 0,image TEXT,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY(category_id) REFERENCES categories(id) ON DELETE SET NULL);
+CREATE TABLE IF NOT EXISTS restaurant_tables(id INTEGER PRIMARY KEY AUTOINCREMENT,table_number INTEGER UNIQUE NOT NULL,seats INTEGER NOT NULL DEFAULT 4,status TEXT NOT NULL DEFAULT 'AVAILABLE');
+CREATE TABLE IF NOT EXISTS customers(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT,mobile TEXT UNIQUE,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS orders(id INTEGER PRIMARY KEY AUTOINCREMENT,order_number TEXT UNIQUE NOT NULL,table_id INTEGER,customer_id INTEGER,status TEXT NOT NULL DEFAULT 'NEW',subtotal REAL NOT NULL,discount REAL NOT NULL DEFAULT 0,tax REAL NOT NULL DEFAULT 0,total_amount REAL NOT NULL,payment_method TEXT,notes TEXT,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY(table_id) REFERENCES restaurant_tables(id) ON DELETE SET NULL,FOREIGN KEY(customer_id) REFERENCES customers(id) ON DELETE SET NULL);
+CREATE TABLE IF NOT EXISTS order_items(id INTEGER PRIMARY KEY AUTOINCREMENT,order_id INTEGER NOT NULL,menu_item_id INTEGER NOT NULL,quantity INTEGER NOT NULL CHECK(quantity>0),price REAL NOT NULL,total REAL NOT NULL,note TEXT,FOREIGN KEY(order_id) REFERENCES orders(id) ON DELETE CASCADE,FOREIGN KEY(menu_item_id) REFERENCES menu_items(id));
+CREATE TABLE IF NOT EXISTS payments(id INTEGER PRIMARY KEY AUTOINCREMENT,order_id INTEGER UNIQUE NOT NULL,method TEXT NOT NULL,amount REAL NOT NULL,paid_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY(order_id) REFERENCES orders(id) ON DELETE CASCADE);
+CREATE TABLE IF NOT EXISTS message_logs(id INTEGER PRIMARY KEY AUTOINCREMENT,order_id INTEGER NOT NULL,channel TEXT NOT NULL,mobile TEXT NOT NULL,status TEXT NOT NULL,provider_message TEXT,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY(order_id) REFERENCES orders(id) ON DELETE CASCADE);
+`)}

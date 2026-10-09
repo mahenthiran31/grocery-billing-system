@@ -1,0 +1,1 @@
+import {Router} from "express";import * as c from "../controllers/orderController.js";import {auth} from "../middleware/auth.js";const r=Router();r.use(auth);r.get("/",c.list);r.post("/",c.create);r.get("/:id",c.one);r.patch("/:id/status",c.status);r.post("/:id/pay",c.payment);export default r;

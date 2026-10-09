@@ -1,0 +1,1 @@
+import {Router} from "express";import * as c from "../controllers/menuController.js";import {auth} from "../middleware/auth.js";const r=Router();r.use(auth);r.get("/",c.list);r.get("/categories",c.categories);r.post("/",c.create);r.put("/:id",c.update);r.delete("/:id",c.remove);export default r;
