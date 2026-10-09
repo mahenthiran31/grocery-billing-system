@@ -1,0 +1,3 @@
+import {getOrder} from "../services/orderService.js";
+import {db} from "../db.js";
+export function send(req,res){const order=getOrder(Number(req.params.id));if(!order)return res.status(404).json({message:"Order not found"});const mobile=order.customer_mobile;if(!mobile)return res.status(400).json({message:"Customer mobile number not available"});const channel=req.body.channel||"sms";db.prepare("INSERT INTO message_logs(order_id,channel,mobile,status,provider_message) VALUES(?,?,?,?,?)").run(order.id,channel,mobile,"MOCK_SENT","Demo provider only - connect SMS/WhatsApp API for production");res.json({result:{message:`Demo ${channel.toUpperCase()} queued for ${mobile}. Connect a real provider for delivery.`}})}

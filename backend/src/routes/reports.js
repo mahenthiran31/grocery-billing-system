@@ -1,0 +1,1 @@
+import {Router} from "express";import {dashboard,sales} from "../controllers/reportController.js";import {auth} from "../middleware/auth.js";const r=Router();r.use(auth);r.get("/dashboard",dashboard);r.get("/sales",sales);export default r;
