@@ -1,4 +1,4 @@
-import Database from "better-sqlite3";
+Aimport Database from "better-sqlite3";
 import { env } from "./config/env.js";
 import path from "path";
 import { fileURLToPath } from "url";
